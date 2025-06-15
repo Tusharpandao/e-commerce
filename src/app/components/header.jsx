@@ -1,85 +1,180 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "@/components/header.css";
-
-import { CircleUserRound, ShoppingBag , Heart } from "lucide-react";
+import { CircleUserRound, ShoppingBag, Heart, Menu } from "lucide-react";
 import ProfileDropdown from "./ProfileDropdown";
+import MobileDrawer from "./MobileDrawer";
+
+const navLinks = [
+	{
+		label: "MEN",
+		href: "/Men",
+		color: "bg-blue-500",
+		hoverColor: "hover:text-blue-500",
+	},
+	{
+		label: "WOMEN",
+		href: "/Women",
+		color: "bg-pink-500",
+		hoverColor: "hover:text-pink-500",
+	},
+	{
+		label: "HOME",
+		href: "/",
+		color: "bg-green-500",
+		hoverColor: "hover:text-green-500",
+	},
+	{
+		label: "SHOP",
+		href: "/shop",
+		color: "bg-yellow-500",
+		hoverColor: "hover:text-yellow-500",
+	},
+	{
+		label: "CONTACT",
+		href: "/contact",
+		color: "bg-purple-500",
+		hoverColor: "hover:text-purple-500",
+	},
+];
 
 export default function Header() {
-  const [triggerAnimation, setTriggerAnimation] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+	const [triggerAnimation, setTriggerAnimation] = useState(false);
+	const [lastScrollY, setLastScrollY] = useState(0);
+	const [hasMounted, setHasMounted] = useState(false);
+	const [hovered, setHovered] = useState(null);
+	const [profileOpen, setProfileOpen] = useState(false);
+	const [drawerOpen, setDrawerOpen] = useState(false);
+	const profileTimeout = useRef();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+	useEffect(() => {
+		setHasMounted(true);
+	}, []);
 
-      if (currentScrollY > 20 && lastScrollY <= 20) {
-        // Scrolling down from top → trigger animation
-        setTriggerAnimation(true);
-      }
+	useEffect(() => {
+		if (!hasMounted) return;
+		const handleScroll = () => {
+			const currentScrollY = window.scrollY;
+			if (currentScrollY > 20 && lastScrollY <= 20) setTriggerAnimation(true);
+			if (currentScrollY <= 20 && lastScrollY > 20) setTriggerAnimation(false);
+			setLastScrollY(currentScrollY);
+		};
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, [lastScrollY, hasMounted]);
 
-      if (currentScrollY <= 20 && lastScrollY > 20) {
-        // Scrolling back to top → reset animation
-        setTriggerAnimation(false);
-      }
+	const handleProfileEnter = () => {
+		if (profileTimeout.current) clearTimeout(profileTimeout.current);
+		setProfileOpen(true);
+		setHovered("PROFILE");
+	};
+	const handleProfileLeave = () => {
+		profileTimeout.current = setTimeout(() => {
+			setProfileOpen(false);
+			setHovered(null);
+		}, 120);
+	};
 
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
-
-  return (
-    <header
-      className={`
-        fixed w-full top-0 z-50 bg-white shadow-md
-        transition-transform duration-500 ease-in-out
-        ${triggerAnimation ? "animate-slideDown" : ""}
-      `}
-    >
-      <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="font-bold text-lg">
-          Urbane Cart
-        </Link>
-        <span className="flex space-x-4 font-medium">
-          <Link href="Men" className="text-gray-900 hover:text-blue-600">
-            Men
-          </Link>
-          <Link href="Women" className="text-gray-900 hover:text-blue-600">
-            Women
-          </Link>
-          <Link href="/" className="text-gray-900 hover:text-blue-600">
-            Home
-          </Link>
-          <Link href="/shop" className="text-gray-900 hover:text-blue-600">
-            Shop
-          </Link>
-
-          <Link href="/contact" className="text-gray-900 hover:text-blue-600">
-            Contact
-          </Link>
-        </span>
-
-      <span className="flex items-center space-x-6">
-  {/* Profile */}
-  <ProfileDropdown />
-  {/* Wishlist */}
-  <Link href="/wishlist" className="flex flex-col items-center text-gray-900 hover:text-blue-600">
-    <Heart className="h-6 w-6" />
-    <span className="text-xs font-semibold mt-1">Wishlist</span>
-  </Link>
-
-  {/* Bag */}
-  <Link href="/cart" className="flex flex-col items-center text-gray-900 hover:text-blue-600">
-    <ShoppingBag className="h-6 w-6" />
-    <span className="text-xs font-semibold mt-1">Bag</span>
-  </Link>
-</span>
-
-      </nav>
-    </header>
-  );
+	return (
+		<header
+			className={`fixed w-full top-0 z-50 bg-white shadow-md transition-none`}
+		>
+			<nav className="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+				{/* Mobile/Tablet: Hamburger + Logo + Icons */}
+				<div className="flex items-center w-full justify-between lg:hidden">
+					<button
+						className="p-2"
+						onClick={() => setDrawerOpen(true)}
+					>
+						<Menu className="h-6 w-6 text-gray-900" />
+					</button>
+					<Link
+						href="/"
+						className="font-bold text-xl tracking-tight"
+					>
+						Urbane Cart
+					</Link>
+					<span className="flex items-center space-x-6">
+						<Heart className="h-6 w-6 text-gray-900" />
+						<ShoppingBag className="h-6 w-6 text-gray-900" />
+					</span>
+				</div>
+				{/* Desktop: Full Navbar (only visible on large screens) */}
+				<>
+					<Link
+						href="/"
+						className="font-bold text-xl tracking-tight hidden lg:block"
+					>
+						Urbane Cart
+					</Link>
+					<span className="hidden lg:flex space-x-8 font-bold tracking-wide text-xs uppercase h-full items-stretch">
+						{navLinks.map((link) => (
+							<div
+								key={link.label}
+								className="relative flex flex-col items-center justify-end h-full cursor-pointer"
+								onMouseEnter={() => setHovered(link.label)}
+								onMouseLeave={() => setHovered(null)}
+							>
+								<Link
+									href={link.href}
+									className={`flex items-center h-full px-2 text-gray-900 transition-colors duration-150 ${link.hoverColor}`}
+								>
+									{link.label}
+								</Link>
+								{hovered === link.label && (
+									<span
+										className={`absolute left-0 right-0 bottom-0 h-1 w-full rounded-full ${link.color}`}
+									></span>
+								)}
+							</div>
+						))}
+					</span>
+					<span className="hidden lg:flex items-center space-x-8 h-full">
+						{/* Profile */}
+						<div
+							className="relative flex flex-col items-center justify-center h-full cursor-pointer group"
+							onMouseEnter={handleProfileEnter}
+							onMouseLeave={handleProfileLeave}
+						>
+							<CircleUserRound className="h-6 w-6 text-gray-900 group-hover:text-pink-600" />
+							<span className="text-xs font-bold mt-1 tracking-wide uppercase">
+								Profile
+							</span>
+							{hovered === "PROFILE" && (
+								<span className="absolute left-0 right-0 bottom-0 h-1 w-full bg-pink-500 rounded-full"></span>
+							)}
+							{profileOpen && (
+								<div className="absolute right-0 top-[120%] z-50">
+									<ProfileDropdown />
+								</div>
+							)}
+						</div>
+						{/* Wishlist */}
+						<Link
+							href="/wishlist"
+							className="flex flex-col items-center justify-center h-full text-gray-900 hover:text-pink-600"
+						>
+							<Heart className="h-6 w-6" />
+							<span className="text-xs font-semibold mt-1">Wishlist</span>
+						</Link>
+						{/* Bag */}
+						<Link
+							href="/cart"
+							className="flex flex-col items-center justify-center h-full text-gray-900 hover:text-pink-600"
+						>
+							<ShoppingBag className="h-6 w-6" />
+							<span className="text-xs font-semibold mt-1">Bag</span>
+						</Link>
+					</span>
+				</>
+			</nav>
+			{/* Mobile Drawer */}
+			<MobileDrawer
+				open={drawerOpen}
+				onClose={() => setDrawerOpen(false)}
+			/>
+		</header>
+	);
 }
