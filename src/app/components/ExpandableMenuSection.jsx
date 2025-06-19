@@ -9,7 +9,7 @@ import { ChevronRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
  * - defaultOpen: boolean (optional)
  * - onClick: function (optional)
  */
-export default function ExpandableMenuSection({ title, children, defaultOpen = false, onClick }) {
+const ExpandableMenuSection = React.memo(function ExpandableMenuSection({ title, children, defaultOpen = false, onClick }) {
   const [open, setOpen] = useState(defaultOpen);
 
   const handleToggle = () => {
@@ -38,4 +38,6 @@ export default function ExpandableMenuSection({ title, children, defaultOpen = f
       </div>
     </div>
   );
-}
+});
+
+export default ExpandableMenuSection;

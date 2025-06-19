@@ -1,6 +1,8 @@
+import styles from "./contact.module.css"
+
 export default function Contact() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
+        <main className={`flex flex-col items-center justify-center min-h-screen ${styles.contactPage}`}>
         <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
         <p className="text-lg mb-8">We would love to hear from you!</p>
         <form className="w-full max-w-md">
@@ -38,6 +40,6 @@ export default function Contact() {
             Send Message
             </button>
         </form>
-        </div>
+        </main>
     );
     }

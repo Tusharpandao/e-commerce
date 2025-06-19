@@ -1,8 +1,9 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 
-export default function ProfileDropdown() {
+const ProfileDropdown = React.memo(function ProfileDropdown() {
   return (
     <div className="relative w-60 p-4 bg-white shadow-lg rounded-md z-50">
       <div className="mb-4">
@@ -33,4 +34,6 @@ export default function ProfileDropdown() {
       </ul>
     </div>
   );
-}
+});
+
+export default ProfileDropdown;

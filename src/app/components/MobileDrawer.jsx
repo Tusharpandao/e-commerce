@@ -45,7 +45,7 @@ const navData = [
 	},
 ];
 
-export default function MobileDrawer({ open, onClose }) {
+const MobileDrawer = React.memo(function MobileDrawer({ open, onClose }) {
 	const [expanded, setExpanded] = useState("");
 
 	const handleExpand = (label) => {
@@ -141,4 +141,6 @@ export default function MobileDrawer({ open, onClose }) {
             </aside>
         </div>
     );
-}
+});
+
+export default MobileDrawer;
