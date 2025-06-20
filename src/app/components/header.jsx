@@ -1,94 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
-import "@/components/header.css";
+import { useState, useRef } from "react";
 import { CircleUserRound, ShoppingBag, Heart, Menu } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const MobileDrawer = dynamic(() => import("./MobileDrawer"), {
-  ssr: false,
-  loading: () => <div>Loading...</div>,
-});
-const ProfileDropdown = dynamic(() => import("./ProfileDropdown"), {
-  ssr: false,
-});
+import ProfileDropdown from "./ProfileDropdown";
+import MobileDrawer from "./MobileDrawer";
+import MegaMenu from "./megaMenu";
 
 const navLinks = [
-  {
-    label: "MEN",
-    href: "/Men",
-    color: "bg-blue-500",
-    hoverColor: "hover:text-blue-500",
-  },
-  {
-    label: "WOMEN",
-    href: "/Women",
-    color: "bg-pink-500",
-    hoverColor: "hover:text-pink-500",
-  },
-  {
-    label: "HOME",
-    href: "/",
-    color: "bg-green-500",
-    hoverColor: "hover:text-green-500",
-  },
-  {
-    label: "SHOP",
-    href: "/shop",
-    color: "bg-yellow-500",
-    hoverColor: "hover:text-yellow-500",
-  },
-  {
-    label: "CONTACT",
-    href: "/contact",
-    color: "bg-purple-500",
-    hoverColor: "hover:text-purple-500",
-  },
+  { label: "MEN", href: "/shop/men", color: "text-blue-600" },
+  { label: "WOMEN", href: "/shop/women", color: "text-pink-600" },
+  { label: "KIDS", href: "/shop/kids", color: "text-yellow-600" },
+  { label: "HOME", href: "/shop/home-living", color: "text-green-600" },
+  { label: "BEAUTY", href: "/shop/beauty", color: "text-purple-600" },
 ];
 
 export default function Header() {
-  const [triggerAnimation, setTriggerAnimation] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [hasMounted, setHasMounted] = useState(false);
-  const [hovered, setHovered] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const profileTimeout = useRef();
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasMounted) return;
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > 20 && lastScrollY <= 20) setTriggerAnimation(true);
-      if (currentScrollY <= 20 && lastScrollY > 20) setTriggerAnimation(false);
-      setLastScrollY(currentScrollY);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY, hasMounted]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
 
   const handleProfileEnter = () => {
     if (profileTimeout.current) clearTimeout(profileTimeout.current);
     setProfileOpen(true);
-    setHovered("PROFILE");
   };
   const handleProfileLeave = () => {
     profileTimeout.current = setTimeout(() => {
       setProfileOpen(false);
-      setHovered(null);
     }, 120);
   };
 
   return (
-    <header
-      className={`fixed w-full top-0 z-50 bg-white shadow-md transition-none`}
-    >
-      <nav className="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+    <header className="fixed w-full top-0 z-40 bg-white shadow-md h-16">
+      <nav className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         {/* Mobile/Tablet: Hamburger + Logo + Icons */}
         <div className="flex items-center w-full justify-between lg:hidden">
           <button className="p-2" onClick={() => setDrawerOpen(true)}>
@@ -98,56 +44,61 @@ export default function Header() {
             Urbane Cart
           </Link>
           <span className="flex items-center space-x-6">
-            <Heart className="h-6 w-6 text-gray-900" />
-            <ShoppingBag className="h-6 w-6 text-gray-900" />
+            <Link href="/wishlist">
+              <Heart className="h-6 w-6 text-gray-900" />
+            </Link>
+            <Link href="/cart">
+              <ShoppingBag className="h-6 w-6 text-gray-900" />
+            </Link>
           </span>
         </div>
-        {/* Desktop: Full Navbar (only visible on large screens) */}
-        <>
-          <Link
-            href="/"
-            className="font-bold text-xl tracking-tight hidden lg:block"
-          >
+        {/* Desktop: Myntra-style Navbar */}
+        <div className="hidden lg:flex w-full items-center justify-between h-full">
+          {/* Left: Logo */}
+          <Link href="/" className="font-bold h-full flex items-center text-xl tracking-tight">
             Urbane Cart
           </Link>
-          <span className="hidden lg:flex space-x-8 font-bold tracking-wide text-xs uppercase h-full items-stretch">
-            {navLinks.map((link) => (
-              <div
-                key={link.label}
-                className="relative flex flex-col items-center justify-end h-full cursor-pointer"
-                onMouseEnter={() => setHovered(link.label)}
-                onMouseLeave={() => setHovered(null)}
-              >
-                <Link
-                  href={link.href}
-                  className={`flex items-center h-full px-2 text-gray-900 transition-colors duration-150 ${link.hoverColor}`}
+          {/* Center: Nav Links */}
+          <div className="flex-1 flex justify-center h-full">
+            <div className="flex space-x-8 font-bold tracking-wide text-xs  h-full items-stretch">
+              {navLinks.map((link) => (
+                <div
+                  key={link.label}
+                  className={`relative flex flex-col items-stretch justify-end h-full cursor-pointer ${
+                    activeMenu === link.label
+                      ? "border-b-4 " + link.color
+                      : "border-b-4 border-transparent"
+                  }`}
+                  onMouseEnter={() => setActiveMenu(link.label)}
+                  onMouseLeave={() => setActiveMenu(null)}
                 >
-                  {link.label}
-                </Link>
-                {hovered === link.label && (
-                  <span
-                    className={`absolute left-0 right-0 bottom-0 h-1 w-full rounded-full ${link.color}`}
-                  ></span>
-                )}
-              </div>
-            ))}
-          </span>
-          <span className="hidden lg:flex items-center space-x-8 h-full">
+                  <Link
+                    href={link.href}
+                    className={`flex items-center h-full px-2 transition-colors duration-150 font-bold `}
+                  >
+                    {link.label}
+                  </Link>
+                  {activeMenu === link.label && <MegaMenu label={link.label} color={link.color} />}
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Right: Profile, Wishlist, Bag */}
+          <div className="flex items-center space-x-8 h-full">
             {/* Profile */}
             <div
-              className="relative flex flex-col items-center justify-center h-full cursor-pointer group"
-              onMouseEnter={handleProfileEnter}
-              onMouseLeave={handleProfileLeave}
+              className={`relative flex flex-col items-center justify-center h-full cursor-pointer group ${
+                activeMenu === "PROFILE" ? "border-b-4 border-pink-400" : ""
+              }`}
+              onMouseEnter={() => setActiveMenu("PROFILE")}
+              onMouseLeave={() => setActiveMenu(null)}
             >
               <CircleUserRound className="h-6 w-6 text-gray-900 group-hover:text-pink-600" />
-              <span className="text-xs font-bold mt-1 tracking-wide uppercase">
+              <span className="text-xs font-bold mt-1 tracking-wide group-hover:text-pink-600 ">
                 Profile
               </span>
-              {hovered === "PROFILE" && (
-                <span className="absolute left-0 right-0 bottom-0 h-1 w-full bg-pink-500 rounded-full"></span>
-              )}
-              {profileOpen && (
-                <div className="absolute left-1/2 top-full -translate-x-1/2 z-50">
+              {activeMenu === "PROFILE" && (
+                <div className="absolute left-1/2 top-full mt-1 z-50 -translate-x-1/2">
                   <ProfileDropdown />
                 </div>
               )}
@@ -168,8 +119,8 @@ export default function Header() {
               <ShoppingBag className="h-6 w-6" />
               <span className="text-xs font-semibold mt-1">Bag</span>
             </Link>
-          </span>
-        </>
+          </div>
+        </div>
       </nav>
       {/* Mobile Drawer */}
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
